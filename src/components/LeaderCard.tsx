@@ -17,6 +17,9 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
   const { isConnected, wallet } = useWallet();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  
+  // Fallback image if the provided one fails to load
+  const [imageSrc, setImageSrc] = useState(leader.image);
 
   const handleVote = async () => {
     if (!isConnected) {
@@ -60,18 +63,24 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
     setImageLoaded(true);
   };
 
+  const handleImageError = () => {
+    // If the image fails to load, use a fallback
+    setImageSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(leader.name)}&background=random&size=256`);
+    setImageLoaded(true);
+  };
+
   return (
     <div 
       className={cn(
         "relative rounded-xl overflow-hidden card-hover border",
         "transform transition-all duration-500 ease-out flex flex-col h-full",
-        "dark:bg-gray-800/50 bg-white",
+        "dark:bg-gray-800/50 bg-gray-900 border-gray-700",
         rank <= 3 ? "shadow-md" : "shadow-sm"
       )}
     >
       {/* Country flag badge */}
       <div className="absolute top-2 right-2 z-10">
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm text-gray-800 border">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-800/90 backdrop-blur-sm text-gray-100 border border-gray-700">
           <img 
             src={`https://flagcdn.com/w20/${leader.countryCode.toLowerCase()}.png`} 
             alt={leader.country} 
@@ -96,27 +105,28 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
       )}
 
       {/* Image with shimmer effect while loading */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+      <div className="relative aspect-[3/4] overflow-hidden bg-gray-800">
         {!imageLoaded && (
           <div className="absolute inset-0 shimmer" />
         )}
         <img 
-          src={`${leader.image}?auto=format&w=500&q=80`}
+          src={imageSrc}
           alt={leader.name}
           className={cn(
             "w-full h-full object-cover lazy-image",
             imageLoaded ? "loaded" : ""
           )}
           onLoad={handleImageLoad}
+          onError={handleImageError}
         />
       </div>
 
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold">{leader.name}</h3>
+          <h3 className="text-lg font-semibold text-white">{leader.name}</h3>
         </div>
         
-        <div className="flex items-center text-sm text-gray-500 mb-3">
+        <div className="flex items-center text-sm text-gray-300 mb-3">
           <img 
             src={`https://flagcdn.com/w20/${leader.countryCode.toLowerCase()}.png`} 
             alt={leader.country} 
@@ -125,15 +135,15 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
           <span>{leader.country}</span>
         </div>
         
-        <div className="flex items-center mt-auto pt-2 border-t">
+        <div className="flex items-center mt-auto pt-2 border-t border-gray-700">
           <div className="text-sm font-medium flex items-center">
-            <span className="text-gray-600 mr-1">Votes:</span>
-            <span className="font-bold">{leader.votes.toLocaleString()}</span>
+            <span className="text-gray-400 mr-1">Votes:</span>
+            <span className="font-bold text-white">{leader.votes.toLocaleString()}</span>
           </div>
           
           <Button 
             size="sm" 
-            className="ml-auto"
+            className="ml-auto bg-blue-600 hover:bg-blue-700"
             onClick={handleVote}
             disabled={isVoting || !isConnected}
           >
