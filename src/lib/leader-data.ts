@@ -112,3 +112,31 @@ export const leaders: Leader[] = [
 export const getLeadersSortedByVotes = (): Leader[] => {
   return [...leaders].sort((a, b) => b.votes - a.votes);
 };
+
+// Helper function to update a leader's name
+export const updateLeaderName = (id: number, newName: string): Leader[] => {
+  const updatedLeaders = leaders.map(leader => {
+    if (leader.id === id) {
+      return { ...leader, name: newName };
+    }
+    return leader;
+  });
+  // Update the original array
+  leaders.length = 0;
+  leaders.push(...updatedLeaders);
+  return updatedLeaders;
+};
+
+// Helper function to update a leader's image
+export const updateLeaderImage = (id: number, newImageUrl: string): Leader[] => {
+  const updatedLeaders = leaders.map(leader => {
+    if (leader.id === id) {
+      return { ...leader, image: newImageUrl };
+    }
+    return leader;
+  });
+  // Update the original array
+  leaders.length = 0;
+  leaders.push(...updatedLeaders);
+  return updatedLeaders;
+};
