@@ -74,14 +74,7 @@ const defaultLeaders: Leader[] = [
     image: "https://images.unsplash.com/photo-1628019128658-703d60131b55?w=500&q=80",
     votes: 132
   },
-  {
-    id: 9,
-    name: "Andre Cronje",
-    country: "South Africa",
-    countryCode: "ZA",
-    image: "https://images.unsplash.com/photo-1621692943864-44708573528e?w=500&q=80",
-    votes: 129
-  },
+
  
 ];
 
