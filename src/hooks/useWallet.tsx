@@ -103,8 +103,12 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         networkName,
       });
 
+      // Normalize Chain ID for comparison
+      const normalizedChainId = chainId.toLowerCase();
+      const normalizedMonadChainId = MONAD_TESTNET_CHAIN_ID.toLowerCase();
+
       // Check if connected to Monad testnet
-      if (chainId.toLowerCase() !== MONAD_TESTNET_CHAIN_ID.toLowerCase()) {
+      if (normalizedChainId !== normalizedMonadChainId) {
         toast("Please switch to Monad Testnet for full functionality", {
           description: "Your wallet is connected, but voting requires Monad Testnet",
           action: {
@@ -147,7 +151,12 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const switchNetwork = async () => {
-    if (!window.ethereum) return;
+    if (!window.ethereum) {
+      toast.error('No Ethereum wallet detected', {
+        description: 'Please install MetaMask or another EVM-compatible wallet to continue.',
+      });
+      return;
+    }
 
     try {
       // Try to switch to Monad Testnet
@@ -155,6 +164,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: MONAD_TESTNET_CHAIN_ID }],
       });
+      toast.success('Switched to Monad Testnet');
     } catch (switchError: any) {
       // This error code indicates that the chain has not been added to MetaMask
       if (switchError.code === 4902) {
@@ -163,6 +173,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
             method: 'wallet_addEthereumChain',
             params: [MONAD_TESTNET],
           });
+          toast.success('Monad Testnet added to your wallet');
         } catch (addError) {
           console.error('Error adding network:', addError);
           toast.error('Failed to add Monad Testnet to your wallet');
