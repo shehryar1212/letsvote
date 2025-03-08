@@ -1,14 +1,15 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Leader } from "@/lib/leader-data";
 import { useWallet } from "@/hooks/useWallet";
-import { ChevronUp, Loader2, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { updateLeaderName, updateLeaderImage, updateLeaderCountry, updateLeaderCountryCode } from "@/lib/leader-data";
+
+// Import refactored components
+import LeaderEditDialog from "./leader/LeaderEditDialog";
+import LeaderBadges from "./leader/LeaderBadges";
+import LeaderImage from "./leader/LeaderImage";
+import LeaderInfo from "./leader/LeaderInfo";
+import VoteButton from "./leader/VoteButton";
 
 interface LeaderCardProps {
   leader: Leader;
@@ -18,15 +19,6 @@ interface LeaderCardProps {
 
 const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
   const { isConnected, wallet } = useWallet();
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  
-  // State for edit form
-  const [newName, setNewName] = useState(leader.name);
-  const [newImageUrl, setNewImageUrl] = useState(leader.image);
-  const [newCountry, setNewCountry] = useState(leader.country);
-  const [newCountryCode, setNewCountryCode] = useState(leader.countryCode);
   
   // Local state to reflect the current values (including after updates)
   const [currentName, setCurrentName] = useState(leader.name);
@@ -36,107 +28,31 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
   // Fallback image if the provided one fails to load
   const [imageSrc, setImageSrc] = useState(leader.image);
 
-  // Update form values when leader prop changes
-  useEffect(() => {
-    setNewName(leader.name);
-    setNewImageUrl(leader.image);
-    setNewCountry(leader.country);
-    setNewCountryCode(leader.countryCode);
-    
-    // Also update current display values
-    setCurrentName(leader.name);
-    setCurrentCountry(leader.country);
-    setCurrentCountryCode(leader.countryCode);
-    setImageSrc(leader.image);
-  }, [leader]);
-
-  const handleVote = async () => {
-    if (!isConnected) {
-      toast.error("Wallet not connected", {
-        description: "Please connect your wallet to vote."
-      });
-      return;
-    }
-
-    if (wallet.chainId !== '0x1252') {
-      toast.error("Wrong network", {
-        description: "Please switch to Monad Testnet to vote."
-      });
-      return;
-    }
-
-    setIsVoting(true);
-    try {
-      // Simulate a transaction delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In Phase 2, this will be replaced with actual blockchain transaction
-      if (onVote) {
-        onVote(leader.id);
-      }
-      
-      toast.success("Vote successful!", {
-        description: `You voted for ${leader.name}`
-      });
-    } catch (error) {
-      console.error("Voting error:", error);
-      toast.error("Vote failed", {
-        description: "There was an error processing your vote."
-      });
-    } finally {
-      setIsVoting(false);
-    }
-  };
-
-  const handleImageLoad = () => {
-    setImageLoaded(true);
-  };
-
   const handleImageError = () => {
     // If the image fails to load, use a fallback
     setImageSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(currentName)}&background=random&size=256`);
-    setImageLoaded(true);
   };
 
-  const handleUpdateLeader = () => {
-    try {
-      // Update the leader's name
-      if (newName !== currentName) {
-        updateLeaderName(leader.id, newName);
-        setCurrentName(newName);
-      }
-      
-      // Update the leader's image if it's changed
-      if (newImageUrl !== leader.image) {
-        updateLeaderImage(leader.id, newImageUrl);
-        setImageSrc(newImageUrl);
-        setImageLoaded(false); // Reset image loaded state to trigger load again
-      }
-      
-      // Update country and country code
-      if (newCountry !== currentCountry) {
-        updateLeaderCountry(leader.id, newCountry);
-        setCurrentCountry(newCountry);
-      }
-      
-      if (newCountryCode !== currentCountryCode) {
-        updateLeaderCountryCode(leader.id, newCountryCode);
-        setCurrentCountryCode(newCountryCode);
-      }
-      
-      // Close the dialog
-      setIsEditing(false);
-      
-      toast.success("Leader updated", {
-        description: "The leader information has been updated successfully."
-      });
-    } catch (error) {
-      console.error("Error updating leader:", error);
-      toast.error("Update failed", {
-        description: "There was an error updating the leader information."
-      });
+  const handleLeaderUpdate = (updates: {
+    name?: string;
+    image?: string;
+    country?: string;
+    countryCode?: string;
+  }) => {
+    // Update local state based on what changed
+    if (updates.name) setCurrentName(updates.name);
+    if (updates.image) setImageSrc(updates.image);
+    if (updates.country) setCurrentCountry(updates.country);
+    if (updates.countryCode) setCurrentCountryCode(updates.countryCode);
+  };
+
+  const handleVote = async () => {
+    if (onVote) {
+      onVote(leader.id);
     }
   };
+
+  const isNetworkValid = wallet.chainId === '0x1252';
 
   return (
     <div 
@@ -147,153 +63,40 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
         rank <= 3 ? "shadow-md" : "shadow-sm"
       )}
     >
-      {/* Edit button */}
-      <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogTrigger asChild>
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="absolute top-2 left-2 z-20 w-8 h-8 bg-gray-800/70 hover:bg-gray-700"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Leader</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="name" className="text-right text-sm font-medium">
-                Name
-              </label>
-              <Input
-                id="name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="image" className="text-right text-sm font-medium">
-                Image URL
-              </label>
-              <Input
-                id="image"
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                className="col-span-3"
-                placeholder="Enter image URL"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="country" className="text-right text-sm font-medium">
-                Country
-              </label>
-              <Input
-                id="country"
-                value={newCountry}
-                onChange={(e) => setNewCountry(e.target.value)}
-                className="col-span-3"
-                placeholder="e.g. United States"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="countryCode" className="text-right text-sm font-medium">
-                Country Code
-              </label>
-              <Input
-                id="countryCode"
-                value={newCountryCode}
-                onChange={(e) => setNewCountryCode(e.target.value)}
-                className="col-span-3"
-                placeholder="e.g. US, GB, JP (ISO 3166-1 alpha-2)"
-                maxLength={2}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button onClick={handleUpdateLeader}>Save Changes</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Country flag badge */}
-      <div className="absolute top-2 right-2 z-10">
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-800/90 backdrop-blur-sm text-gray-100 border border-gray-700">
-          <img 
-            src={`https://flagcdn.com/w20/${currentCountryCode.toLowerCase()}.png`} 
-            alt={currentCountry} 
-            className="w-4 h-auto mr-1" 
-          />
-          {currentName}
-        </span>
-      </div>
+      {/* Edit dialog component */}
+      <LeaderEditDialog leader={leader} onUpdate={handleLeaderUpdate} />
       
-      {/* Rank badge for top 3 */}
-      {rank <= 3 && (
-        <div className="absolute top-2 left-12 z-10">
-          <span className={cn(
-            "flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white",
-            rank === 1 ? "bg-yellow-500" : 
-            rank === 2 ? "bg-gray-400" : 
-            "bg-amber-700"
-          )}>
-            #{rank}
-          </span>
-        </div>
-      )}
+      {/* Badges component */}
+      <LeaderBadges 
+        rank={rank} 
+        name={currentName} 
+        country={currentCountry} 
+        countryCode={currentCountryCode} 
+      />
 
-      {/* Image with shimmer effect while loading */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-gray-800">
-        {!imageLoaded && (
-          <div className="absolute inset-0 shimmer" />
-        )}
-        <img 
-          src={imageSrc}
-          alt={currentName}
-          className={cn(
-            "w-full h-full object-cover lazy-image",
-            imageLoaded ? "loaded" : ""
-          )}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-        />
-      </div>
+      {/* Image component */}
+      <LeaderImage 
+        imageSrc={imageSrc} 
+        name={currentName} 
+        onImageError={handleImageError} 
+      />
 
+      {/* Leader info section */}
       <div className="p-4 flex flex-col flex-grow">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-white">{currentName}</h3>
-        </div>
+        <LeaderInfo 
+          name={currentName} 
+          country={currentCountry} 
+          countryCode={currentCountryCode} 
+          votes={leader.votes} 
+        />
         
-        <div className="flex items-center text-sm text-gray-300 mb-3">
-          <img 
-            src={`https://flagcdn.com/w20/${currentCountryCode.toLowerCase()}.png`} 
-            alt={currentCountry} 
-            className="w-4 h-auto mr-1.5" 
+        {/* Vote button */}
+        <div className="flex items-center mt-2">
+          <VoteButton 
+            isConnected={isConnected} 
+            networkValid={isNetworkValid} 
+            onVote={handleVote} 
           />
-          <span>{currentCountry}</span>
-        </div>
-        
-        <div className="flex items-center mt-auto pt-2 border-t border-gray-700">
-          <div className="text-sm font-medium flex items-center">
-            <span className="text-gray-400 mr-1">Votes:</span>
-            <span className="font-bold text-white">{leader.votes.toLocaleString()}</span>
-          </div>
-          
-          <Button 
-            size="sm" 
-            className="ml-auto bg-blue-600 hover:bg-blue-700"
-            onClick={handleVote}
-            disabled={isVoting || !isConnected}
-          >
-            {isVoting ? (
-              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-            ) : (
-              <ChevronUp className="h-4 w-4 mr-1" />
-            )}
-            Vote
-          </Button>
         </div>
       </div>
     </div>
