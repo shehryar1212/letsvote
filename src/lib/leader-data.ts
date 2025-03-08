@@ -68,7 +68,7 @@ const defaultLeaders: Leader[] = [
   },
   {
     id: 8,
-    name: "",
+    name: "hjgj",
     country: "United States",
     countryCode: "US",
     image:"",
