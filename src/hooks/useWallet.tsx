@@ -103,12 +103,15 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         networkName,
       });
 
-      // Normalize Chain ID for comparison
-      const normalizedChainId = chainId.toLowerCase();
-      const normalizedMonadChainId = MONAD_TESTNET_CHAIN_ID.toLowerCase();
+      // Convert hex chain IDs to integers for comparison
+      const currentChainIdInt = parseInt(chainId, 16);
+      const monadChainIdInt = parseInt(MONAD_TESTNET_CHAIN_ID, 16);
+
+      console.log('Current Chain ID (int):', currentChainIdInt);
+      console.log('Expected Monad Chain ID (int):', monadChainIdInt);
 
       // Check if connected to Monad testnet
-      if (normalizedChainId !== normalizedMonadChainId) {
+      if (currentChainIdInt !== monadChainIdInt) {
         toast("Please switch to Monad Testnet for full functionality", {
           description: "Your wallet is connected, but voting requires Monad Testnet",
           action: {
