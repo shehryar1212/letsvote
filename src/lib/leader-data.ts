@@ -12,7 +12,7 @@ export interface Leader {
 const defaultLeaders: Leader[] = [
   {
     id: 1,
-    name: "Vitalik Buterin",
+    name: "Donad",
     country: "Russia/Canada",
     countryCode: "CA",
     image: "https://images.unsplash.com/photo-1621504450181-5d356f61d307?w=500&q=80",
@@ -82,30 +82,7 @@ const defaultLeaders: Leader[] = [
     image: "https://images.unsplash.com/photo-1621692943864-44708573528e?w=500&q=80",
     votes: 129
   },
-  {
-    id: 10,
-    name: "Anatoly Yakovenko",
-    country: "United States",
-    countryCode: "US",
-    image: "https://images.unsplash.com/photo-1649972938084-e0e494723c26?w=500&q=80",
-    votes: 114
-  },
-  {
-    id: 11,
-    name: "Do Kwon",
-    country: "South Korea",
-    countryCode: "KR",
-    image: "https://images.unsplash.com/photo-1633422488528-4e35324beb8d?w=500&q=80",
-    votes: 110
-  },
-  {
-    id: 12,
-    name: "Justin Sun",
-    country: "China",
-    countryCode: "CN",
-    image: "https://images.unsplash.com/photo-1642096633497-350cd2683ba7?w=500&q=80",
-    votes: 97
-  }
+ 
 ];
 
 // Initialize leaders from localStorage or use defaults
