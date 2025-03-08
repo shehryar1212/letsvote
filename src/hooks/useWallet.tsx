@@ -91,7 +91,12 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const updateWalletInfo = async (address: string) => {
     try {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-      console.log('Current Chain ID:', chainId); // Debugging
+      
+      // Comprehensive debug logs
+      console.log('Current Chain ID (raw):', chainId);
+      console.log('Expected Monad Chain ID:', MONAD_TESTNET_CHAIN_ID);
+      console.log('Current Chain ID (int):', parseInt(chainId, 16));
+      console.log('Expected Monad Chain ID (int):', parseInt(MONAD_TESTNET_CHAIN_ID, 16));
 
       const networkName = getNetworkName(chainId);
       const balance = await getBalance(address);
@@ -106,9 +111,6 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       // Convert hex chain IDs to integers for comparison
       const currentChainIdInt = parseInt(chainId, 16);
       const monadChainIdInt = parseInt(MONAD_TESTNET_CHAIN_ID, 16);
-
-      console.log('Current Chain ID (int):', currentChainIdInt);
-      console.log('Expected Monad Chain ID (int):', monadChainIdInt);
 
       // Check if connected to Monad testnet
       if (currentChainIdInt !== monadChainIdInt) {
