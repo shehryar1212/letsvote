@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Leader } from "@/lib/leader-data";
 import { useWallet } from "@/hooks/useWallet";
@@ -20,13 +21,34 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // State for edit form
   const [newName, setNewName] = useState(leader.name);
   const [newImageUrl, setNewImageUrl] = useState(leader.image);
   const [newCountry, setNewCountry] = useState(leader.country);
   const [newCountryCode, setNewCountryCode] = useState(leader.countryCode);
   
+  // Local state to reflect the current values (including after updates)
+  const [currentName, setCurrentName] = useState(leader.name);
+  const [currentCountry, setCurrentCountry] = useState(leader.country);
+  const [currentCountryCode, setCurrentCountryCode] = useState(leader.countryCode);
+  
   // Fallback image if the provided one fails to load
   const [imageSrc, setImageSrc] = useState(leader.image);
+
+  // Update form values when leader prop changes
+  useEffect(() => {
+    setNewName(leader.name);
+    setNewImageUrl(leader.image);
+    setNewCountry(leader.country);
+    setNewCountryCode(leader.countryCode);
+    
+    // Also update current display values
+    setCurrentName(leader.name);
+    setCurrentCountry(leader.country);
+    setCurrentCountryCode(leader.countryCode);
+    setImageSrc(leader.image);
+  }, [leader]);
 
   const handleVote = async () => {
     if (!isConnected) {
@@ -72,14 +94,17 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
 
   const handleImageError = () => {
     // If the image fails to load, use a fallback
-    setImageSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(leader.name)}&background=random&size=256`);
+    setImageSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(currentName)}&background=random&size=256`);
     setImageLoaded(true);
   };
 
   const handleUpdateLeader = () => {
     try {
       // Update the leader's name
-      updateLeaderName(leader.id, newName);
+      if (newName !== currentName) {
+        updateLeaderName(leader.id, newName);
+        setCurrentName(newName);
+      }
       
       // Update the leader's image if it's changed
       if (newImageUrl !== leader.image) {
@@ -89,12 +114,14 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
       }
       
       // Update country and country code
-      if (newCountry !== leader.country) {
+      if (newCountry !== currentCountry) {
         updateLeaderCountry(leader.id, newCountry);
+        setCurrentCountry(newCountry);
       }
       
-      if (newCountryCode !== leader.countryCode) {
+      if (newCountryCode !== currentCountryCode) {
         updateLeaderCountryCode(leader.id, newCountryCode);
+        setCurrentCountryCode(newCountryCode);
       }
       
       // Close the dialog
@@ -195,11 +222,11 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
       <div className="absolute top-2 right-2 z-10">
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-800/90 backdrop-blur-sm text-gray-100 border border-gray-700">
           <img 
-            src={`https://flagcdn.com/w20/${leader.countryCode.toLowerCase()}.png`} 
-            alt={leader.country} 
+            src={`https://flagcdn.com/w20/${currentCountryCode.toLowerCase()}.png`} 
+            alt={currentCountry} 
             className="w-4 h-auto mr-1" 
           />
-          {leader.name}
+          {currentName}
         </span>
       </div>
       
@@ -224,7 +251,7 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
         )}
         <img 
           src={imageSrc}
-          alt={leader.name}
+          alt={currentName}
           className={cn(
             "w-full h-full object-cover lazy-image",
             imageLoaded ? "loaded" : ""
@@ -236,16 +263,16 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
 
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-white">{leader.name}</h3>
+          <h3 className="text-lg font-semibold text-white">{currentName}</h3>
         </div>
         
         <div className="flex items-center text-sm text-gray-300 mb-3">
           <img 
-            src={`https://flagcdn.com/w20/${leader.countryCode.toLowerCase()}.png`} 
-            alt={leader.country} 
+            src={`https://flagcdn.com/w20/${currentCountryCode.toLowerCase()}.png`} 
+            alt={currentCountry} 
             className="w-4 h-auto mr-1.5" 
           />
-          <span>{leader.country}</span>
+          <span>{currentCountry}</span>
         </div>
         
         <div className="flex items-center mt-auto pt-2 border-t border-gray-700">
