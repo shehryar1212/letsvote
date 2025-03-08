@@ -8,11 +8,11 @@ const LeaderGrid = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading from an API
+    // Load from our data service that now uses localStorage
     const fetchLeaders = async () => {
       setLoading(true);
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Simulate network delay (reduced for better UX)
+      await new Promise(resolve => setTimeout(resolve, 500));
       setLeaders(getLeadersSortedByVotes());
       setLoading(false);
     };
@@ -30,7 +30,16 @@ const LeaderGrid = () => {
       });
       
       // Resort the leaders by votes
-      return [...newLeaders].sort((a, b) => b.votes - a.votes);
+      const sortedLeaders = [...newLeaders].sort((a, b) => b.votes - a.votes);
+      
+      // Persist the vote in localStorage
+      try {
+        localStorage.setItem('cryptoLeaders', JSON.stringify(sortedLeaders));
+      } catch (e) {
+        console.error("Error saving votes to localStorage:", e);
+      }
+      
+      return sortedLeaders;
     });
   };
 

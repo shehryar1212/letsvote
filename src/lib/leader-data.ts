@@ -8,8 +8,8 @@ export interface Leader {
   votes: number;
 }
 
-// Crypto community leaders
-export const leaders: Leader[] = [
+// Original data as fallback
+const defaultLeaders: Leader[] = [
   {
     id: 1,
     name: "Vitalik Buterin",
@@ -108,6 +108,32 @@ export const leaders: Leader[] = [
   }
 ];
 
+// Initialize leaders from localStorage or use defaults
+const initializeLeaders = (): Leader[] => {
+  const savedLeaders = localStorage.getItem('cryptoLeaders');
+  if (savedLeaders) {
+    try {
+      return JSON.parse(savedLeaders);
+    } catch (e) {
+      console.error("Error parsing saved leaders:", e);
+      return [...defaultLeaders];
+    }
+  }
+  return [...defaultLeaders];
+};
+
+// Export leaders with persistence
+export let leaders: Leader[] = initializeLeaders();
+
+// Helper to save leaders to localStorage
+const saveLeadersToStorage = () => {
+  try {
+    localStorage.setItem('cryptoLeaders', JSON.stringify(leaders));
+  } catch (e) {
+    console.error("Error saving leaders to localStorage:", e);
+  }
+};
+
 // Sort leaders by votes (highest first)
 export const getLeadersSortedByVotes = (): Leader[] => {
   return [...leaders].sort((a, b) => b.votes - a.votes);
@@ -124,6 +150,7 @@ export const updateLeaderName = (id: number, newName: string): Leader[] => {
   // Update the original array
   leaders.length = 0;
   leaders.push(...updatedLeaders);
+  saveLeadersToStorage(); // Save changes
   return updatedLeaders;
 };
 
@@ -138,6 +165,7 @@ export const updateLeaderImage = (id: number, newImageUrl: string): Leader[] => 
   // Update the original array
   leaders.length = 0;
   leaders.push(...updatedLeaders);
+  saveLeadersToStorage(); // Save changes
   return updatedLeaders;
 };
 
@@ -152,6 +180,7 @@ export const updateLeaderCountry = (id: number, newCountry: string): Leader[] =>
   // Update the original array
   leaders.length = 0;
   leaders.push(...updatedLeaders);
+  saveLeadersToStorage(); // Save changes
   return updatedLeaders;
 };
 
@@ -166,5 +195,6 @@ export const updateLeaderCountryCode = (id: number, newCountryCode: string): Lea
   // Update the original array
   leaders.length = 0;
   leaders.push(...updatedLeaders);
+  saveLeadersToStorage(); // Save changes
   return updatedLeaders;
 };
