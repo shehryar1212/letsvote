@@ -251,7 +251,7 @@ export const useWallet = () => {
   const context = useContext(WalletContext);
   
   if (context === undefined) {
-    throw new Error('useWallet must be used within a WalletProvider');
+    throw new Error('useWallet must be used within WalletProvider');
   }
   
   return context;
