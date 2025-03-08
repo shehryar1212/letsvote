@@ -92,15 +92,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     try {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       
-      // Comprehensive debug logs
-      console.log('Current Chain ID (raw):', chainId);
-      console.log('Expected Monad Chain ID:', MONAD_TESTNET_CHAIN_ID);
-      console.log('Current Chain ID (int):', parseInt(chainId, 16));
-      console.log('Expected Monad Chain ID (int):', parseInt(MONAD_TESTNET_CHAIN_ID, 16));
-
+      // Get network info
       const networkName = getNetworkName(chainId);
       const balance = await getBalance(address);
       
+      // Update wallet state
       setWallet({
         address,
         balance,
@@ -108,12 +104,25 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         networkName,
       });
 
-      // Convert hex chain IDs to integers for comparison
+      // Use strict integer comparison for chain IDs
       const currentChainIdInt = parseInt(chainId, 16);
       const monadChainIdInt = parseInt(MONAD_TESTNET_CHAIN_ID, 16);
+      
+      console.log('Final comparison:', {
+        current: {
+          raw: chainId,
+          int: currentChainIdInt
+        },
+        expected: {
+          raw: MONAD_TESTNET_CHAIN_ID,
+          int: monadChainIdInt
+        },
+        equal: currentChainIdInt === monadChainIdInt
+      });
 
-      // Check if connected to Monad testnet
+      // Only show network switch message if NOT on Monad Testnet
       if (currentChainIdInt !== monadChainIdInt) {
+        console.log('Network mismatch detected, showing toast notification');
         toast("Please switch to Monad Testnet for full functionality", {
           description: "Your wallet is connected, but voting requires Monad Testnet",
           action: {
@@ -121,6 +130,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
             onClick: () => switchNetwork()
           }
         });
+      } else {
+        console.log('On Monad Testnet, no action needed');
       }
     } catch (error) {
       console.error('Error updating wallet info:', error);
@@ -128,15 +139,18 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getNetworkName = (chainId: string): string => {
-    const networks: Record<string, string> = {
-      '0x1': 'Ethereum Mainnet',
-      '0x5': 'Goerli Testnet',
-      '0x89': 'Polygon Mainnet',
-      '0x13881': 'Mumbai Testnet',
-      [MONAD_TESTNET_CHAIN_ID]: 'Monad Testnet',
-    };
-
-    return networks[chainId] || `Unknown Network (${chainId})`;
+    // Create a case-insensitive lookup object for network names
+    const networks: Record<string, string> = {};
+    
+    // Add network entries with lowercase keys for case-insensitive matching
+    networks['0x1'.toLowerCase()] = 'Ethereum Mainnet';
+    networks['0x5'.toLowerCase()] = 'Goerli Testnet';
+    networks['0x89'.toLowerCase()] = 'Polygon Mainnet';
+    networks['0x13881'.toLowerCase()] = 'Mumbai Testnet';
+    networks[MONAD_TESTNET_CHAIN_ID.toLowerCase()] = 'Monad Testnet';
+    
+    // Case-insensitive lookup
+    return networks[chainId.toLowerCase()] || `Unknown Network (${chainId})`;
   };
 
   const getBalance = async (address: string): Promise<string> => {
@@ -251,7 +265,7 @@ export const useWallet = () => {
   const context = useContext(WalletContext);
   
   if (context === undefined) {
-    throw new Error('useWallet must be used within WalletProvider');
+    throw new Error('useWallet must be used within a WalletProvider');
   }
   
   return context;
