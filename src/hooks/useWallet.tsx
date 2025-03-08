@@ -20,7 +20,7 @@ interface WalletContextType {
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 // Chain ID for Monad testnet
-const MONAD_TESTNET_CHAIN_ID = '0x1252';
+const MONAD_TESTNET_CHAIN_ID = '10143';
 
 // Monad Testnet network configuration
 const MONAD_TESTNET = {
@@ -31,8 +31,8 @@ const MONAD_TESTNET = {
     symbol: 'MON',
     decimals: 18,
   },
-  rpcUrls: ['https://rpc.ankr.com/monad_testnet'],
-  blockExplorerUrls: ['https://explorer.testnet.monad.xyz/'],
+  rpcUrls: ['https://testnet-rpc.monad.xyz'],
+  blockExplorerUrls: ['https://testnet.monadexplorer.com'],
 };
 
 export const WalletProvider = ({ children }: { children: ReactNode }) => {
