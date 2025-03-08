@@ -140,3 +140,31 @@ export const updateLeaderImage = (id: number, newImageUrl: string): Leader[] => 
   leaders.push(...updatedLeaders);
   return updatedLeaders;
 };
+
+// Helper function to update a leader's country
+export const updateLeaderCountry = (id: number, newCountry: string): Leader[] => {
+  const updatedLeaders = leaders.map(leader => {
+    if (leader.id === id) {
+      return { ...leader, country: newCountry };
+    }
+    return leader;
+  });
+  // Update the original array
+  leaders.length = 0;
+  leaders.push(...updatedLeaders);
+  return updatedLeaders;
+};
+
+// Helper function to update a leader's country code
+export const updateLeaderCountryCode = (id: number, newCountryCode: string): Leader[] => {
+  const updatedLeaders = leaders.map(leader => {
+    if (leader.id === id) {
+      return { ...leader, countryCode: newCountryCode };
+    }
+    return leader;
+  });
+  // Update the original array
+  leaders.length = 0;
+  leaders.push(...updatedLeaders);
+  return updatedLeaders;
+};

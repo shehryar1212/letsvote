@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Leader } from "@/lib/leader-data";
 import { useWallet } from "@/hooks/useWallet";
@@ -8,7 +7,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { updateLeaderName, updateLeaderImage } from "@/lib/leader-data";
+import { updateLeaderName, updateLeaderImage, updateLeaderCountry, updateLeaderCountryCode } from "@/lib/leader-data";
 
 interface LeaderCardProps {
   leader: Leader;
@@ -23,6 +22,8 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(leader.name);
   const [newImageUrl, setNewImageUrl] = useState(leader.image);
+  const [newCountry, setNewCountry] = useState(leader.country);
+  const [newCountryCode, setNewCountryCode] = useState(leader.countryCode);
   
   // Fallback image if the provided one fails to load
   const [imageSrc, setImageSrc] = useState(leader.image);
@@ -87,6 +88,15 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
         setImageLoaded(false); // Reset image loaded state to trigger load again
       }
       
+      // Update country and country code
+      if (newCountry !== leader.country) {
+        updateLeaderCountry(leader.id, newCountry);
+      }
+      
+      if (newCountryCode !== leader.countryCode) {
+        updateLeaderCountryCode(leader.id, newCountryCode);
+      }
+      
       // Close the dialog
       setIsEditing(false);
       
@@ -147,6 +157,31 @@ const LeaderCard = ({ leader, onVote, rank }: LeaderCardProps) => {
                 onChange={(e) => setNewImageUrl(e.target.value)}
                 className="col-span-3"
                 placeholder="Enter image URL"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="country" className="text-right text-sm font-medium">
+                Country
+              </label>
+              <Input
+                id="country"
+                value={newCountry}
+                onChange={(e) => setNewCountry(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. United States"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="countryCode" className="text-right text-sm font-medium">
+                Country Code
+              </label>
+              <Input
+                id="countryCode"
+                value={newCountryCode}
+                onChange={(e) => setNewCountryCode(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. US, GB, JP (ISO 3166-1 alpha-2)"
+                maxLength={2}
               />
             </div>
           </div>
