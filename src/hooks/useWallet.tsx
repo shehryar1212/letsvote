@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { toast } from 'sonner';
 
@@ -19,8 +18,8 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-// Chain ID for Monad testnet
-const MONAD_TESTNET_CHAIN_ID = '10143';
+// Chain ID for Monad testnet (hexadecimal format)
+const MONAD_TESTNET_CHAIN_ID = '0x279F'; // 10143 in hexadecimal
 
 // Monad Testnet network configuration
 const MONAD_TESTNET = {
@@ -92,6 +91,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const updateWalletInfo = async (address: string) => {
     try {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      console.log('Current Chain ID:', chainId); // Debugging
+
       const networkName = getNetworkName(chainId);
       const balance = await getBalance(address);
       
@@ -103,7 +104,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       });
 
       // Check if connected to Monad testnet
-      if (chainId !== MONAD_TESTNET_CHAIN_ID) {
+      if (chainId.toLowerCase() !== MONAD_TESTNET_CHAIN_ID.toLowerCase()) {
         toast("Please switch to Monad Testnet for full functionality", {
           description: "Your wallet is connected, but voting requires Monad Testnet",
           action: {
